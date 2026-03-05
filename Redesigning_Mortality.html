@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augmento Mori — Redesigning Mortality</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --deep-navy: #080c1a;
+    --midnight: #0d1230;
+    --rose: #e8547a;
+    --coral: #f07060;
+    --magenta: #d946a8;
+    --violet: #7c3aed;
+    --indigo: #3b3fa8;
+    --soft-pink: #f9a8d4;
+    --muted: rgba(255,255,255,0.45);
+    --accent: rgba(255,255,255,0.7);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--deep-navy);
+    font-family: 'DM Sans', sans-serif;
+    color: white;
+    overflow: hidden;
+  }
+
+  /* ── SLIDESHOW ── */
+  #deck { width: 100%; height: 100%; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.9s ease;
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  /* shared blob canvas */
+  .bg { position: absolute; inset: 0; z-index: 0; }
+  .content { position: relative; z-index: 2; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 6vw; }
+
+  /* ── SLIDE 1 ── */
+  #s1 .bg { background: radial-gradient(ellipse 70% 55% at 48% 52%, #c4326080 0%, #7c2d8060 35%, #1a0a3a 70%, var(--deep-navy) 100%); }
+  #s1 .blob {
+    position: absolute; width: 65vw; height: 55vh;
+    background: radial-gradient(ellipse at 40% 45%, #e8547a 0%, #c2327a 25%, #7b2fbe 55%, transparent 80%);
+    filter: blur(40px); opacity: 0.75; border-radius: 60% 40% 55% 45% / 50% 60% 40% 55%;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    animation: morph 8s ease-in-out infinite;
+  }
+  @keyframes morph {
+    0%,100% { border-radius: 60% 40% 55% 45% / 50% 60% 40% 55%; }
+    33%      { border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%; }
+    66%      { border-radius: 40% 60% 60% 40% / 50% 55% 45% 50%; }
+  }
+  #s1 .center-text { text-align: center; }
+  #s1 h1 { font-family: 'Playfair Display', serif; font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
+  #s1 .subtitle { font-size: clamp(1rem, 2.2vw, 1.6rem); font-weight: 300; color: var(--accent); margin-top: 1.4rem; max-width: 36ch; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  #s1 .tagline { position: absolute; bottom: 7vh; left: 5vw; font-size: clamp(0.65rem, 1.2vw, 0.9rem); color: var(--muted); max-width: 28ch; line-height: 1.6; }
+
+  /* ── SLIDE 2 ── */
+  #s2 .bg { background: radial-gradient(ellipse 80% 70% at 50% 50%, #1e1340 0%, #0a0d25 60%, var(--deep-navy) 100%); }
+  #s2 .flame { position: absolute; width: 10vw; height: 14vw; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at 50% 70%, #d946a8, #7c3aed, transparent 75%);
+    filter: blur(12px); border-radius: 50% 50% 40% 40%; animation: flicker 3s ease-in-out infinite; }
+  @keyframes flicker { 0%,100% { transform: translate(-50%,-50%) scaleY(1); opacity:0.9; } 50% { transform: translate(-50%,-50%) scaleY(1.08); opacity:1; } }
+  #s2 .layout { width: 100%; max-width: 1100px; display: grid; grid-template-rows: auto 1fr auto; gap: 5vh; text-align: center; }
+  #s2 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3.8vw, 3.4rem); font-weight: 700; line-height: 1.2; }
+  #s2 .cols { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 4vw; }
+  #s2 .col-head { font-size: clamp(0.7rem, 1.1vw, 0.95rem); font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--soft-pink); margin-bottom: 1.2rem; }
+  #s2 .stat { font-size: clamp(0.9rem, 1.6vw, 1.2rem); color: var(--accent); line-height: 1.8; }
+  #s2 .divider { width: 1px; background: rgba(255,255,255,0.15); }
+  #s2 .result { font-size: clamp(0.85rem, 1.5vw, 1.15rem); color: rgba(209,170,255,0.8); font-style: italic; }
+
+  /* ── SLIDE 3 ── */
+  #s3 .bg { background: radial-gradient(ellipse 100% 80% at 50% 20%, #2d1040 0%, #160825 40%, #080c1a 100%); }
+  #s3 .clouds { position: absolute; inset: 0; overflow: hidden; }
+  #s3 .cloud { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.35; }
+  #s3 .c1 { width: 60vw; height: 50vh; background: #7b2060; top: -10vh; right: -10vw; }
+  #s3 .c2 { width: 50vw; height: 40vh; background: #4a1060; top: 10vh; left: 10vw; }
+  #s3 .c3 { width: 70vw; height: 60vh; background: #2d0e50; bottom: -20vh; right: 0; }
+  #s3 .layout { width: 100%; max-width: 1100px; }
+  #s3 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3.2vw, 3rem); font-weight: 700; line-height: 1.2; max-width: 22ch; margin-bottom: 7vh; }
+  #s3 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; }
+  #s3 .col-head { font-size: clamp(0.65rem, 1vw, 0.85rem); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(180,120,220,0.8); margin-bottom: 1rem; }
+  #s3 .stat-num { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; color: rgba(180,120,220,0.9); line-height: 1; }
+  #s3 .stat-desc { font-size: clamp(0.85rem, 1.4vw, 1.1rem); color: rgba(200,160,240,0.85); margin-top: 0.4rem; margin-bottom: 2rem; line-height: 1.5; }
+  #s3 .conclusion { text-align: center; margin-top: 6vh; font-size: clamp(0.95rem, 1.8vw, 1.35rem); color: var(--accent); font-style: italic; }
+
+  /* ── SLIDE 4 ── */
+  #s4 .bg { background: radial-gradient(ellipse 90% 80% at 50% 60%, #1a0a38 0%, #0a0818 60%, #080c1a 100%); }
+  #s4 .orbs { position: absolute; inset: 0; pointer-events: none; }
+  #s4 .orb { position: absolute; border-radius: 50%; filter: blur(55px); }
+  #s4 .o1 { width: 35vw; height: 35vw; background: radial-gradient(#e8547a, #7c3aed); bottom: -5vh; left: 5vw; opacity: 0.4; }
+  #s4 .o2 { width: 25vw; height: 25vw; background: radial-gradient(#d946a8, #3b3fa8); bottom: -5vh; right: 10vw; opacity: 0.3; }
+  #s4 .o3 { width: 18vw; height: 18vw; background: radial-gradient(#f07060, #e8547a); bottom: 5vh; left: 30vw; opacity: 0.35; }
+  #s4 .layout { width: 100%; max-width: 1100px; text-align: center; }
+  #s4 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 3.6rem); font-weight: 900; line-height: 1.15; margin-bottom: 1.5rem; }
+  #s4 .sub { font-size: clamp(0.85rem, 1.6vw, 1.15rem); color: rgba(180,140,255,0.8); margin-bottom: 6vh; }
+  #s4 .principles { display: grid; grid-template-columns: repeat(4,1fr); gap: 2vw; margin-top: 2vh; }
+  #s4 .principle { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2.5vh 1.5vw; backdrop-filter: blur(10px); }
+  #s4 .p-num { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; color: var(--rose); margin-bottom: 0.6rem; }
+  #s4 .p-title { font-size: clamp(0.8rem, 1.3vw, 1rem); font-weight: 500; line-height: 1.4; }
+
+  /* ── SLIDE 5 ── */
+  #s5 .bg { background: radial-gradient(ellipse 90% 80% at 70% 50%, #3a0a20 0%, #1e0830 40%, #0a0818 80%, var(--deep-navy) 100%); }
+  #s5 .glow { position: absolute; width: 45vw; height: 70vh; right: 0; top: 50%; transform: translateY(-50%);
+    background: radial-gradient(ellipse at 60% 50%, #f07060 0%, #e8547a 20%, #d946a8 45%, #7c3aed 70%, transparent 90%);
+    filter: blur(30px); opacity: 0.6; border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
+    animation: morph 7s ease-in-out infinite; }
+  #s5 .layout { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 6vw; align-items: center; }
+  #s5 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3.2vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.6rem; }
+  #s5 .sub5 { font-size: clamp(0.75rem, 1.3vw, 1rem); color: var(--muted); margin-bottom: 3vh; line-height: 1.6; }
+  #s5 .deck-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.4rem; }
+  #s5 .bullet { width: 8px; height: 8px; border-radius: 50%; background: var(--rose); margin-top: 0.4em; flex-shrink: 0; }
+  #s5 .item-title { font-weight: 600; color: white; font-size: clamp(0.85rem, 1.4vw, 1.05rem); }
+  #s5 .item-desc { font-size: clamp(0.75rem, 1.2vw, 0.9rem); color: var(--muted); margin-top: 0.2rem; }
+  #s5 .tagline5 { font-family: 'Playfair Display', serif; font-size: clamp(0.9rem, 1.6vw, 1.2rem); font-weight: 700; color: white; margin-top: 3vh; line-height: 1.4; }
+  #s5 .card-visual { position: relative; height: 40vh; display: flex; align-items: center; justify-content: center; }
+  .card-stack { position: relative; width: 18vw; height: 22vw; }
+  .card-stack .card { position: absolute; width: 100%; height: 100%; border-radius: 16px; }
+  .card-stack .card:nth-child(1) { background: linear-gradient(135deg,#f07060,#e8547a,#c2327a); transform: rotate(-8deg) translate(-15%,5%); opacity:0.7; }
+  .card-stack .card:nth-child(2) { background: linear-gradient(135deg,#d946a8,#9b38d4); transform: rotate(-3deg) translate(-5%,2%); opacity:0.85; }
+  .card-stack .card:nth-child(3) { background: linear-gradient(135deg,#e8547a,#d946a8,#7c3aed); transform: rotate(2deg); }
+  .card-stack .card:nth-child(4) { background: linear-gradient(135deg,#f9a8d4,#e8547a); transform: rotate(7deg) translate(10%,-3%); opacity:0.75; }
+
+  /* ── SLIDE 6 ── */
+  #s6 .bg { background: radial-gradient(ellipse 100% 90% at 50% 30%, #2a0a40 0%, #180828 50%, #080c1a 100%); }
+  #s6 .haze { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(120,50,160,0.3) 0%, transparent 70%); }
+  #s6 .layout { width: 100%; max-width: 1100px; text-align: center; }
+  #s6 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3.8vw, 3.4rem); font-weight: 700; line-height: 1.15; margin-bottom: 0.8rem; }
+  #s6 .sub6 { font-size: clamp(0.8rem, 1.4vw, 1.05rem); color: var(--muted); max-width: 55ch; margin: 0 auto 6vh; line-height: 1.7; }
+  #s6 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4vw; text-align: left; }
+  #s6 .card6 { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 4vh 3vw; }
+  #s6 .c6-title { font-family: 'Playfair Display', serif; font-size: clamp(1rem, 1.8vw, 1.4rem); font-weight: 700; margin-bottom: 1rem; }
+  #s6 .c6-body { font-size: clamp(0.8rem, 1.3vw, 1rem); color: var(--muted); line-height: 1.7; }
+
+  /* ── SLIDE 7 ── */
+  #s7 .bg { background: radial-gradient(ellipse 100% 80% at 30% 50%, #1a0830 0%, #0e0625 60%, #080c1a 100%); }
+  #s7 .wave { position: absolute; right: 0; top: 0; width: 55%; height: 100%;
+    background: linear-gradient(160deg, #f07060 0%, #e8547a 15%, #d946a8 30%, #9b38d4 45%, #5b2db0 60%, #3b3fa8 75%, #1a2070 90%);
+    clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 5% 100%); opacity: 0.85; }
+  #s7 .wave-blur { position: absolute; right: 0; top: 0; width: 55%; height: 100%;
+    background: inherit; filter: blur(25px); opacity: 0.3;
+    clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%); }
+  #s7 .layout { width: 100%; max-width: 1100px; }
+  #s7 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3.2vw, 3rem); font-weight: 700; line-height: 1.2; max-width: 22ch; margin-bottom: 1rem; }
+  #s7 .sub7 { font-size: clamp(0.8rem, 1.4vw, 1rem); color: var(--muted); max-width: 38ch; margin-bottom: 4vh; line-height: 1.7; }
+  #s7 .tag { display: inline-block; font-size: clamp(0.7rem, 1.1vw, 0.85rem); padding: 0.4em 1.2em; border: 1px solid rgba(255,255,255,0.2); border-radius: 99px; color: var(--muted); }
+
+  /* ── SLIDE 8 ── */
+  #s8 .bg { background: radial-gradient(ellipse 90% 80% at 50% 60%, #1a0830 0%, #0e0625 50%, #080c1a 100%); }
+  #s8 .glow8 { position: absolute; width: 30vw; height: 30vw; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    background: radial-gradient(#d946a8, #7c3aed, transparent 70%); filter: blur(50px); opacity: 0.35; }
+  #s8 .layout { width: 100%; max-width: 1200px; text-align: center; }
+  #s8 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3.2vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.8rem; }
+  #s8 .sub8 { font-size: clamp(0.8rem, 1.4vw, 1rem); color: var(--muted); max-width: 60ch; margin: 0 auto 5vh; line-height: 1.7; }
+  #s8 .agents { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5vw; max-width: 700px; margin: 0 auto; }
+  #s8 .agent { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 3vh 2.5vw; text-align: left; }
+  #s8 .a-orb { width: 44px; height: 44px; border-radius: 50%; margin-bottom: 1rem; }
+  #s8 .a1 .a-orb { background: radial-gradient(#f07060,#e8547a); }
+  #s8 .a2 .a-orb { background: radial-gradient(#d946a8,#c2327a); }
+  #s8 .a3 .a-orb { background: radial-gradient(#7c3aed,#4a2090); }
+  #s8 .a4 .a-orb { background: radial-gradient(#f9a8d4,#d886b8); }
+  #s8 .a-title { font-weight: 600; font-size: clamp(0.85rem, 1.4vw, 1.05rem); margin-bottom: 0.4rem; }
+  #s8 .a-desc { font-size: clamp(0.75rem, 1.2vw, 0.9rem); color: var(--muted); line-height: 1.5; }
+
+  /* ── SLIDE 9 ── */
+  #s9 .bg {
+    background: linear-gradient(160deg, #f07060 0%, #e8547a 10%, #d946a8 20%, #9b38d4 35%, #5b2db0 50%, #3b3fa8 65%, #e8547a 80%, #f07060 100%);
+    opacity: 0.9;
+  }
+  #s9 .overlay { position: absolute; inset: 0; background: rgba(10,4,20,0.35); }
+  #s9 .layout { width: 100%; max-width: 900px; text-align: center; }
+  #s9 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 3.6rem); font-weight: 900; line-height: 1.15; margin-bottom: 3vh; }
+  #s9 .sub9a { font-size: clamp(0.95rem, 1.8vw, 1.4rem); color: rgba(255,255,255,0.9); max-width: 50ch; margin: 0 auto 4vh; line-height: 1.7; }
+  #s9 .sub9b { font-size: clamp(0.8rem, 1.4vw, 1.05rem); color: rgba(255,255,255,0.7); max-width: 60ch; margin: 0 auto; line-height: 1.7; }
+
+  /* ── SLIDE 10 ── */
+  #s10 .bg { background: radial-gradient(ellipse 60% 60% at 50% 50%, #2a1230 0%, #130820 40%, #080c1a 100%); }
+  #s10 .ring { position: absolute; width: 55vmin; height: 55vmin; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    border-radius: 50%; border: 1px solid rgba(180,80,120,0.2);
+    background: radial-gradient(ellipse at 50% 50%, rgba(180,80,120,0.15) 0%, rgba(100,40,80,0.08) 40%, transparent 70%);
+    box-shadow: 0 0 60px 20px rgba(180,80,120,0.1), inset 0 0 60px 20px rgba(180,80,120,0.08);
+    animation: pulse 4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:0.7; transform:translate(-50%,-50%) scale(1); } 50% { opacity:1; transform:translate(-50%,-50%) scale(1.04); } }
+  #s10 .ring2 { position: absolute; width: 38vmin; height: 38vmin; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    border-radius: 50%; border: 1px solid rgba(180,80,120,0.12);
+    animation: pulse 4s ease-in-out infinite 0.5s; }
+  #s10 .layout { width: 100%; max-width: 800px; text-align: center; }
+  #s10 h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3.5vw, 3.2rem); font-weight: 700; line-height: 1.3; margin-bottom: 1.5rem; }
+  #s10 .sub10 { font-size: clamp(0.85rem, 1.5vw, 1.15rem); color: var(--muted); max-width: 44ch; margin: 0 auto; line-height: 1.7; font-style: italic; }
+
+  /* ── NAV ── */
+  #nav { position: fixed; bottom: 4vh; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; align-items: center; gap: 1.2rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: all 0.3s; }
+  .dot.on { background: white; transform: scale(1.35); }
+  .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    backdrop-filter: blur(6px); }
+  .nav-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* ── SLIDE COUNT ── */
+  #counter { position: fixed; top: 3vh; right: 3vw; font-size: 0.75rem; color: rgba(255,255,255,0.3); z-index: 100; letter-spacing: 0.1em; }
+
+
+
+  /* ── FADE-IN ANIMATION ── */
+  .slide.active .content > * { animation: fadeUp 0.7s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<div id="counter">1 / 10</div>
+
+<div id="deck">
+
+  <!-- SLIDE 1 -->
+  <div class="slide active" id="s1">
+    <div class="bg"></div>
+    <div class="blob"></div>
+    <div class="content">
+      <div class="center-text">
+        <h1>Augmento Mori</h1>
+        <p class="subtitle">Reconnecting death into the human life cycle through a realistic utopia.</p>
+      </div>
+      <div class="tagline">A design framework that transforms the end of life from an isolated medical event into a dignified, community-embedded transition.</div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide" id="s2">
+    <div class="bg"></div>
+    <div class="flame"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>We recognize death as natural, yet build elaborate systems to avoid it.</h2>
+        <div class="cols">
+          <div>
+            <div class="col-head">The Belief</div>
+            <p class="stat">94% affirm death is a natural process.</p>
+            <p class="stat">85% believe open end-of-life planning is important.</p>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div class="col-head">The Reality</div>
+            <p class="stat">96% avoid discussing death unless absolutely necessary.</p>
+            <p class="stat">42% have shared end-of-life plans.</p>
+          </div>
+        </div>
+        <p class="result">The Result: We have relegated the absolute center of human life to the extreme periphery.</p>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="slide" id="s3">
+    <div class="bg"></div>
+    <div class="clouds"><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div></div>
+    <div class="content">
+      <div class="layout">
+        <h2>The medicalization of mortality leaves patients isolated and caregivers overwhelmed.</h2>
+        <div class="cols">
+          <div>
+            <div class="col-head">Clinical Exile</div>
+            <div class="stat-num">78%</div>
+            <p class="stat-desc">disagree that hospitals are good places to die.</p>
+            <div class="stat-num">76%</div>
+            <p class="stat-desc">prefer dying at home.</p>
+          </div>
+          <div>
+            <div class="col-head">The Caregiver Burden</div>
+            <div class="stat-num">80%</div>
+            <p class="stat-desc">report a severe emotional toll.</p>
+            <div class="stat-num">100%</div>
+            <p class="stat-desc">identify end-of-life costs as overwhelming.</p>
+          </div>
+        </div>
+        <p class="conclusion">Death has become a clinical failure to be managed rather than a communal transition to be held.</p>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="slide" id="s4">
+    <div class="bg"></div>
+    <div class="orbs"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="content">
+      <div class="layout">
+        <h2>Awareness alone does not change behavior. Design does.</h2>
+        <p class="sub">We must reclaim the four cross-cultural principles of death that medical systems exclude:</p>
+        <div class="principles">
+          <div class="principle"><div class="p-num">1</div><div class="p-title">Communal Gathering</div></div>
+          <div class="principle"><div class="p-num">2</div><div class="p-title">Continued Relationship</div></div>
+          <div class="principle"><div class="p-num">3</div><div class="p-title">Embodied Ritual</div></div>
+          <div class="principle"><div class="p-num">4</div><div class="p-title">Transitional Framing</div></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide" id="s5">
+    <div class="bg"></div>
+    <div class="glow"></div>
+    <div class="content">
+      <div class="layout">
+        <div>
+          <h2>Design of Augmento Mori</h2>
+          <p class="sub5">A structured, game-based intervention to lower the psychological barriers to end-of-life conversations.</p>
+          <div class="deck-item"><div class="bullet"></div><div><div class="item-title">Reflection</div><div class="item-desc">Naming the fears and silences.</div></div></div>
+          <div class="deck-item"><div class="bullet"></div><div><div class="item-title">Legacy</div><div class="item-desc">Unwritten letters and lasting values.</div></div></div>
+          <div class="deck-item"><div class="bullet"></div><div><div class="item-title">Ritual</div><div class="item-desc">Embodied acts of meaning-making.</div></div></div>
+          <div class="deck-item"><div class="bullet"></div><div><div class="item-title">Community</div><div class="item-desc">The social fabric of dying.</div></div></div>
+          <div class="deck-item"><div class="bullet"></div><div><div class="item-title">Body &amp; Earth</div><div class="item-desc">Physical wishes and ecological choices.</div></div></div>
+          <p class="tagline5">Shifting the paradigm from passive remembrance to active enhancement.</p>
+        </div>
+        <div class="card-visual">
+          <div class="card-stack">
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 6 -->
+  <div class="slide" id="s6">
+    <div class="bg"></div>
+    <div class="haze"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>Following, not leading: The philosophy of therapeutic presence.</h2>
+        <p class="sub6">Direct confrontation with mortality triggers avoidance. Play-mediated approaches bypass this through social buffering and psychological safety.</p>
+        <div class="cols">
+          <div class="card6">
+            <div class="c6-title">The Anam Cara Tradition</div>
+            <p class="c6-body">Modeled on the Celtic practice of non-agenda companionship. Facilitators do not direct the conversation; they hold the space.</p>
+          </div>
+          <div class="card6">
+            <div class="c6-title">Objective Companionship</div>
+            <p class="c6-body">Providing a safe container, allowing users to explore their mortality through culturally fluent prompts and active listening.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 7 -->
+  <div class="slide" id="s7">
+    <div class="bg"></div>
+    <div class="wave"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>HeartBloom coordinates systemic care through the Chameleon Principle.</h2>
+        <p class="sub7">Introducing the HeartBloom Agentic Companion: a dignity-centered digital ecosystem for palliative care.</p>
+        <p class="sub7">Just as a chameleon adapts its chromatophores to its environment, HeartBloom reads and calibrates to the patient's evolving physical, emotional, and spiritual state. It ensures the environment adapts to the dying person, not the other way around.</p>
+        <span class="tag">Chameleon Principle</span>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 8 -->
+  <div class="slide" id="s8">
+    <div class="bg"></div>
+    <div class="glow8"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>The architecture of dignity operates on tiered, patient-led consent.</h2>
+        <p class="sub8">Built on the aiXplain Agentic OS, HeartBloom utilizes four synchronized, HIPAA-compliant AI agents acting as an extended social worker.</p>
+        <div class="agents">
+          <div class="agent a1"><div class="a-orb"></div><div class="a-title">The Patient Agent</div><div class="a-desc">Centers agency, voice, and environmental control.</div></div>
+          <div class="agent a2"><div class="a-orb"></div><div class="a-title">The Caregiver Agent</div><div class="a-desc">Coordinates communication and burden sharing.</div></div>
+          <div class="agent a3"><div class="a-orb"></div><div class="a-title">The Medical Team Agent</div><div class="a-desc">Surfaces clinical visibility and pain alerts.</div></div>
+          <div class="agent a4"><div class="a-orb"></div><div class="a-title">The Spiritual Care Agent</div><div class="a-desc">Integrates cultural connection and prayer schedules.</div></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 9 -->
+  <div class="slide" id="s9">
+    <div class="bg"></div>
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>Restoring the ecosystem from sterile wards to adaptive sanctuaries.</h2>
+        <p class="sub9a">True systemic transformation requires moving care from institutional isolation back into the community tapestry.</p>
+        <p class="sub9b">Integrating advance care planning, community volunteer networks, and responsive physical environments empowers decentralized networks to hold the weight of end-of-life care together.</p>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- SLIDE 10 -->
+  <div class="slide" id="s10">
+    <div class="bg"></div>
+    <div class="ring"></div>
+    <div class="ring2"></div>
+    <div class="content">
+      <div class="layout">
+        <h2>Learning to die well is essential for living a good life.</h2>
+        <p class="sub10">We cannot solve death, but through careful, human-centered design, we can remember how to hold it.</p>
+      </div>
+    </div>
+    
+  </div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nav-btn" id="prev">&#8592;</button>
+  <div id="dots"></div>
+  <button class="nav-btn" id="next">&#8594;</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  const total = slides.length;
+
+  // build dots
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.addEventListener('click', () => go(i));
+    dotsEl.appendChild(d);
+  }
+
+  function go(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    cur = (n + total) % total;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('on');
+    counter.textContent = (cur + 1) + ' / ' + total;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+  document.getElementById('next').addEventListener('click', () => go(cur + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(cur - 1);
+  });
+
+  // touch/swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1);
+  });
+</script>
+</body>
+</html>
